@@ -1,0 +1,46 @@
+package tmpl_validator
+
+func GetSampleTmpl() string {
+	return `package {{.}}validator
+
+import (
+	"clean-code-structure/param/{{.}}param"
+	"clean-code-structure/pkg/richerror"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) (map[string]string, error) {
+	const op = "messagevalidator.ValidateSampleRequest"
+
+	if err := validation.ValidateStruct(&req); err != nil {
+		fieldErrors := make(map[string]string)
+
+		errV, ok := err.(validation.Errors)
+		if ok {
+			for key, value := range errV {
+				if value != nil {
+					fieldErrors[key] = value.Error()
+				}
+			}
+		}
+
+		return fieldErrors, richerror.New(op).WithKind(richerror.KindInvalid).
+			WithMeta(map[string]interface{}{"req": req}).WithErr(err)
+	}
+
+	return nil, nil
+}
+`
+}
+
+func GetValidatorTmpl() string {
+	return `package {{.}}validator
+
+type Validator struct {
+}
+
+func New() Validator {
+	return Validator{}
+}
+`
+}
