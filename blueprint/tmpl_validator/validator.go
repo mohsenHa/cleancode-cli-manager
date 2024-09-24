@@ -9,8 +9,14 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) (map[string]string, error) {
-	const op = "messagevalidator.ValidateSampleRequest"
+func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) error {
+	const op = "{{.}}validator.ValidateSampleRequest"
+	
+	_, span := otela.TraceBuilder(
+		"{{.}}validator",
+		"ValidateSampleRequest",
+		otela.WithContext(req.Ctx),
+	)
 
 	if err := validation.ValidateStruct(&req); err != nil {
 		fieldErrors := make(map[string]string)
@@ -23,12 +29,18 @@ func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) (map[stri
 				}
 			}
 		}
-
-		return fieldErrors, richerror.New(op).WithKind(richerror.KindInvalid).
-			WithMeta(map[string]interface{}{"req": req}).WithErr(err)
+		span.AddEvent("request not valid")
+		err = validator.Error{
+			Fields: fieldErrors,
+			Err: richerror.New(op).WithMessage(errmsg.ErrorMsgInvalidInput).
+				WithKind(richerror.KindInvalid).
+				WithMeta(map[string]interface{}{"req": req}).WithErr(err),
+		}
+		span.RecordError(err)
+		return err
 	}
 
-	return nil, nil
+	return nil
 }
 `
 }

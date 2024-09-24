@@ -39,8 +39,11 @@ func GetSampleTmpl() string {
 import (
 	"clean-code-structure/param/{{.}}param"
 	"clean-code-structure/pkg/httpmsg"
-	"github.com/labstack/echo/v4"
+	"clean-code-structure/validator"
+	"errors"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 func (h Handler) sample(c echo.Context) error {
@@ -48,20 +51,23 @@ func (h Handler) sample(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}
-	if fieldErrors, err := h.{{.}}Validator.ValidateSampleRequest(req); err != nil {
-		msg, code := httpmsg.Error(err)
-		return c.JSON(code, echo.Map{
-			"message": msg,
-			"errors":  fieldErrors,
-		})
-	}
 
 	resp, err := h.{{.}}Service.Sample(req)
+
+	var vErr validator.Error
+	if errors.As(err, &vErr) {
+		msg, code := httpmsg.Error(err)
+
+		return c.JSON(code, echo.Map{
+			"message": msg,
+			"errors":  vErr.Fields,
+		})
+	}
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, resp)
 
+	return c.JSON(http.StatusOK, resp)
 }
 `
 }
