@@ -5,18 +5,15 @@ func GetHandlerTmpl() string {
 
 import (
 	"clean-code-structure/service/{{.}}service"
-	"clean-code-structure/validator/{{.}}validator"
 )
 
 type Handler struct {
-	{{.}}Validator {{.}}validator.Validator
 	{{.}}Service   {{.}}service.Service
 }
 
-func New({{.}}Service {{.}}service.Service, {{.}}Validator {{.}}validator.Validator) Handler {
+func New({{.}}Service {{.}}service.Service) Handler {
 	return Handler{
 		{{.}}Service:   {{.}}Service,
-		{{.}}Validator: {{.}}Validator,
 	}
 }
 `
