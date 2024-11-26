@@ -9,6 +9,8 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
+// Validator layer MUST return validator.Error
+
 func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) error {
 	const op = "{{.}}validator.ValidateSampleRequest"
 	
@@ -21,8 +23,8 @@ func (v Validator) ValidateSampleRequest(req {{.}}param.SampleRequest) error {
 	if err := validation.ValidateStruct(&req); err != nil {
 		fieldErrors := make(map[string]string)
 
-		errV, ok := err.(validation.Errors)
-		if ok {
+		var errV validation.Errors
+		if errors.As(err, &errV) {
 			for key, value := range errV {
 				if value != nil {
 					fieldErrors[key] = value.Error()

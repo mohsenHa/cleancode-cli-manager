@@ -7,6 +7,8 @@ import (
 	"clean-code-structure/param/{{.}}param"
 )
 
+// Service layer MUST return  validator.Error or richerror
+
 func (s Service) Sample(req {{.}}param.SampleRequest) ({{.}}param.SampleResponse, error) {
 
 	if err := s.validator.ValidateSampleRequest(req); err != nil {
@@ -24,7 +26,7 @@ func GetServiceTmpl() string {
 import "clean-code-structure/validator/{{.}}validator"
 
 type Service struct {
-validator {{.}}validator.Validator
+	validator {{.}}validator.Validator
 }
 
 func New(validator {{.}}validator.Validator) Service {
